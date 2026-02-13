@@ -1,0 +1,23 @@
+# Core
+Django>=5.0,<6.0
+djangorestframework>=3.15
+
+# Database
+psycopg2-binary>=2.9
+
+# Celery & Background Tasks
+celery>=5.4
+redis>=5.0
+django-celery-results>=2.5
+
+# Environment & Utilities
+python-dotenv>=1.0
+
+# API Utilities
+django-filter>=24.2
+
+# Production / Deployment
+gunicorn>=22.0
+
+# Dev / Debug (optional but useful)
+ipython>=8.0
