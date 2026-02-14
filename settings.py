@@ -1,34 +1,35 @@
 from pathlib import Path
-import secrets  # For generating a secret key
 
 # ========================
 # BASE DIR
 # ========================
-BASE_DIR = Path(__file__).resolve().parent.parent  # Assuming settings.py is in <project>/settings.py
+BASE_DIR = Path(__file__).resolve().parent.parent
+# settings.py, urls.py, wsgi.py, asgi.py are in the same directory
 
 # ========================
 # SECURITY
 # ========================
-DEBUG = True
-ALLOWED_HOSTS = ["*"]  # For development only
+DEBUG = True  # ⚠️ Set False in production
 
-# Generate a secret key if not set (development only)
-SECRET_KEY = "django-insecure-" + secrets.token_urlsafe(50)
+ALLOWED_HOSTS = ["*"]  # ⚠️ Dev only
+
+# DO NOT auto-generate at runtime
+SECRET_KEY = "django-insecure-change-this-in-production"
 
 # ========================
 # INSTALLED APPS
 # ========================
 INSTALLED_APPS = [
     # Django defaults
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
 
-    # Your app
-    'credit',
+    # Local apps
+    "credit",
 ]
 
 # ========================
@@ -36,18 +37,18 @@ INSTALLED_APPS = [
 # ========================
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "django.contrib.sessions.middleware.SessionMiddleware",       # Must come before auth
+    "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
-    "django.contrib.auth.middleware.AuthenticationMiddleware",    # Required for admin
-    "django.contrib.messages.middleware.MessageMiddleware",       # Required for admin
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
 # ========================
-# ROOT URLS
+# URL CONFIG
 # ========================
-ROOT_URLCONF = "urls"  # Assuming urls.py is in project root
+ROOT_URLCONF = "urls"
 
 # ========================
 # TEMPLATES
@@ -55,8 +56,10 @@ ROOT_URLCONF = "urls"  # Assuming urls.py is in project root
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"],  # Optional: create a templates/ folder
-        "APP_DIRS": True,
+        "DIRS": [
+            BASE_DIR / "templates",  # optional global templates folder
+        ],
+        "APP_DIRS": True,  # enables credit/templates/*
         "OPTIONS": {
             "context_processors": [
                 "django.template.context_processors.debug",
@@ -71,8 +74,8 @@ TEMPLATES = [
 # ========================
 # WSGI / ASGI
 # ========================
-WSGI_APPLICATION = "wsgi.application"  # Ensure wsgi.py is in project root
-ASGI_APPLICATION = "asgi.application"  # Ensure asgi.py is in project root
+WSGI_APPLICATION = "wsgi.application"
+ASGI_APPLICATION = "asgi.application"
 
 # ========================
 # DATABASE
@@ -89,13 +92,21 @@ DATABASES = {
 }
 
 # ========================
-# PASSWORD VALIDATORS
+# PASSWORD VALIDATION
 # ========================
 AUTH_PASSWORD_VALIDATORS = [
-    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
-    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
-    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
-    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
+    {
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"
+    },
 ]
 
 # ========================
@@ -110,9 +121,11 @@ USE_TZ = True
 # STATIC FILES
 # ========================
 STATIC_URL = "/static/"
-STATICFILES_DIRS = [BASE_DIR / "static"]
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
 
 # ========================
-# DEFAULT AUTO FIELD
+# DEFAULT PRIMARY KEY FIELD
 # ========================
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

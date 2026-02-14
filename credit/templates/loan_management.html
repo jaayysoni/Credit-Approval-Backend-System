@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loan Operations</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 p-6 font-sans">
+
+<!-- 🔙 Back Button -->
+<div class="max-w-3xl mx-auto mb-4">
+  <a
+    href="/"
+    class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium">
+    ← Back to Customer Management
+  </a>
+</div>
+
+<h1 class="text-3xl font-bold mb-6 text-center">Loan Operations</h1>
+
+<div class="max-w-3xl mx-auto">
+
+  <!-- Accordion: Check Loan Eligibility -->
+  <div class="mb-4">
+    <button
+      class="w-full flex justify-between items-center bg-purple-500 text-white px-4 py-2 rounded accordion-toggle">
+      <span>Check Loan Eligibility</span>
+      <span class="arrow transition-transform duration-200">▶</span>
+    </button>
+
+    <div class="accordion-content hidden bg-white p-4 mt-2 rounded shadow">
+      <form class="space-y-3">
+        <input type="number" placeholder="Customer ID" class="border p-2 w-full rounded">
+        <input type="number" placeholder="Loan Amount" class="border p-2 w-full rounded">
+        <input type="number" placeholder="Interest Rate" class="border p-2 w-full rounded">
+        <input type="number" placeholder="Tenure (months)" class="border p-2 w-full rounded">
+        <button class="bg-green-500 text-white px-4 py-2 rounded">Check Eligibility</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Accordion: Create Loan -->
+  <div class="mb-4">
+    <button
+      class="w-full flex justify-between items-center bg-purple-500 text-white px-4 py-2 rounded accordion-toggle">
+      <span>Create Loan</span>
+      <span class="arrow transition-transform duration-200">▶</span>
+    </button>
+
+    <div class="accordion-content hidden bg-white p-4 mt-2 rounded shadow">
+      <form class="space-y-3">
+        <input type="number" placeholder="Customer ID" class="border p-2 w-full rounded">
+        <input type="number" placeholder="Loan Amount" class="border p-2 w-full rounded">
+        <input type="number" placeholder="Interest Rate" class="border p-2 w-full rounded">
+        <input type="number" placeholder="Tenure (months)" class="border p-2 w-full rounded">
+        <button class="bg-green-500 text-white px-4 py-2 rounded">Create Loan</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Accordion: View Loan Details -->
+  <div class="mb-4">
+    <button
+      class="w-full flex justify-between items-center bg-purple-500 text-white px-4 py-2 rounded accordion-toggle">
+      <span>View Loan Details</span>
+      <span class="arrow transition-transform duration-200">▶</span>
+    </button>
+
+    <div class="accordion-content hidden bg-white p-4 mt-2 rounded shadow">
+      <form class="space-y-3">
+        <input type="number" placeholder="Loan ID" class="border p-2 w-full rounded">
+        <button class="bg-green-500 text-white px-4 py-2 rounded">Fetch Loan</button>
+      </form>
+    </div>
+  </div>
+
+</div>
+
+<!-- JS -->
+<script>
+  document.querySelectorAll(".accordion-toggle").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const content = btn.nextElementSibling;
+      const arrow = btn.querySelector(".arrow");
+
+      content.classList.toggle("hidden");
+      arrow.classList.toggle("rotate-90");
+    });
+  });
+</script>
+
+</body>
+</html>
