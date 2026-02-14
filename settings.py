@@ -4,16 +4,12 @@ from pathlib import Path
 # BASE DIR
 # ========================
 BASE_DIR = Path(__file__).resolve().parent.parent
-# settings.py, urls.py, wsgi.py, asgi.py are in the same directory
 
 # ========================
 # SECURITY
 # ========================
 DEBUG = True  # ⚠️ Set False in production
-
 ALLOWED_HOSTS = ["*"]  # ⚠️ Dev only
-
-# DO NOT auto-generate at runtime
 SECRET_KEY = "django-insecure-change-this-in-production"
 
 # ========================
@@ -27,6 +23,13 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+
+    # Third-party apps
+    "rest_framework",
+
+    # Celery apps
+    "django_celery_results",
+    "django_celery_beat",
 
     # Local apps
     "credit",
@@ -56,10 +59,8 @@ ROOT_URLCONF = "urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [
-            BASE_DIR / "templates",  # optional global templates folder
-        ],
-        "APP_DIRS": True,  # enables credit/templates/*
+        "DIRS": [],  # no HTML pages
+        "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
                 "django.template.context_processors.debug",
@@ -83,30 +84,31 @@ ASGI_APPLICATION = "asgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "credit_system",
-        "USER": "credit_user",
-        "PASSWORD": "StrongPassword123",
+        "NAME": "postgres",
+        "USER": "jaysoni",
+        "PASSWORD": "",  # leave blank if no password
         "HOST": "localhost",
         "PORT": "5432",
     }
 }
 
 # ========================
+# Django REST Framework
+# ========================
+REST_FRAMEWORK = {
+    "DEFAULT_RENDERER_CLASSES": [
+        "rest_framework.renderers.JSONRenderer",
+    ]
+}
+
+# ========================
 # PASSWORD VALIDATION
 # ========================
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"
-    },
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
 # ========================
@@ -121,11 +123,25 @@ USE_TZ = True
 # STATIC FILES
 # ========================
 STATIC_URL = "/static/"
-STATICFILES_DIRS = [
-    BASE_DIR / "static",
-]
+STATICFILES_DIRS = [BASE_DIR / "static"]
 
 # ========================
 # DEFAULT PRIMARY KEY FIELD
 # ========================
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# ========================
+# CELERY SETTINGS
+# ========================
+# Use in-memory broker for development/testing
+CELERY_BROKER_URL = "memory://"
+CELERY_RESULT_BACKEND = "django-db"
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = "UTC"
+
+# ========================
+# CELERY BEAT SETTINGS
+# ========================
+CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
