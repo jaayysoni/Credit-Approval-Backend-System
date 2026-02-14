@@ -2,121 +2,152 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Credit Approval System</title>
+<title>Credit Approval System – API UI</title>
 <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="bg-gray-100 p-6 font-sans">
+<body class="bg-gray-100 p-8">
 
-<h1 class="text-3xl font-bold mb-6 text-center">Credit Approval System</h1>
+<h1 class="text-3xl font-bold text-center mb-6">
+  Credit Approval System (API UI Reference)
+</h1>
 
-<!-- PAGE 1: Customer Management -->
-<div class="max-w-3xl mx-auto mb-12">
-  <h2 class="text-2xl font-semibold mb-4">Customer Management</h2>
-
-  <!-- Accordion: Register Customer -->
-  <div class="mb-4">
-    <button
-      class="w-full flex justify-between items-center bg-blue-500 text-white px-4 py-2 rounded accordion-toggle">
-      <span>Register Customer</span>
-      <span class="arrow transition-transform duration-200">▶</span>
-    </button>
-
-    <div class="accordion-content hidden bg-white p-4 mt-2 rounded shadow">
-      <form class="space-y-3">
-        <input type="text" placeholder="First Name" class="border p-2 w-full rounded">
-        <input type="text" placeholder="Last Name" class="border p-2 w-full rounded">
-        <input type="number" placeholder="Age" class="border p-2 w-full rounded">
-        <input type="number" placeholder="Monthly Income" class="border p-2 w-full rounded">
-        <input type="text" placeholder="Phone Number" class="border p-2 w-full rounded">
-        <button class="bg-green-500 text-white px-4 py-2 rounded">Submit</button>
-      </form>
-    </div>
-  </div>
-
-  <!-- Accordion: View Customer Loans -->
-  <div class="mb-4">
-    <button
-      class="w-full flex justify-between items-center bg-blue-500 text-white px-4 py-2 rounded accordion-toggle">
-      <span>View Customer Loans</span>
-      <span class="arrow transition-transform duration-200">▶</span>
-    </button>
-
-    <div class="accordion-content hidden bg-white p-4 mt-2 rounded shadow">
-      <form class="space-y-3">
-        <input type="number" placeholder="Customer ID" class="border p-2 w-full rounded">
-        <button class="bg-green-500 text-white px-4 py-2 rounded">Fetch Loans</button>
-      </form>
-    </div>
-  </div>
+<!-- 🔀 Navigation Button -->
+<div class="flex justify-center mb-10">
+  <a
+    href="/loans/"
+    class="inline-flex items-center gap-2 bg-purple-600 text-white px-6 py-2 rounded shadow hover:bg-purple-700 transition">
+    Go to Loan Operations Page →
+  </a>
 </div>
 
-<!-- PAGE 2: Loan Operations -->
-<div class="max-w-3xl mx-auto mb-12">
-  <h2 class="text-2xl font-semibold mb-4">Loan Operations</h2>
+<div class="max-w-6xl mx-auto space-y-10">
 
-  <!-- Accordion: Check Loan Eligibility -->
-  <div class="mb-4">
-    <button
-      class="w-full flex justify-between items-center bg-purple-500 text-white px-4 py-2 rounded accordion-toggle">
-      <span>Check Loan Eligibility</span>
-      <span class="arrow transition-transform duration-200">▶</span>
-    </button>
+<!-- REGISTER -->
+<section class="bg-white p-6 rounded shadow">
+  <h2 class="text-xl font-semibold mb-4">/register</h2>
 
-    <div class="accordion-content hidden bg-white p-4 mt-2 rounded shadow">
-      <form class="space-y-3">
-        <input type="number" placeholder="Customer ID" class="border p-2 w-full rounded">
-        <input type="number" placeholder="Loan Amount" class="border p-2 w-full rounded">
-        <input type="number" placeholder="Interest Rate" class="border p-2 w-full rounded">
-        <input type="number" placeholder="Tenure (months)" class="border p-2 w-full rounded">
-        <button class="bg-green-500 text-white px-4 py-2 rounded">Check Eligibility</button>
-      </form>
+  <div class="grid grid-cols-2 gap-6">
+    <div>
+      <h3 class="font-semibold mb-2">Request Body</h3>
+      <input class="border p-2 w-full mb-2" placeholder="first_name">
+      <input class="border p-2 w-full mb-2" placeholder="last_name">
+      <input class="border p-2 w-full mb-2" placeholder="age">
+      <input class="border p-2 w-full mb-2" placeholder="monthly_income">
+      <input class="border p-2 w-full" placeholder="phone_number">
+    </div>
+
+    <div>
+      <h3 class="font-semibold mb-2">Response Body</h3>
+      <input class="border p-2 w-full mb-2" placeholder="customer_id">
+      <input class="border p-2 w-full mb-2" placeholder="name">
+      <input class="border p-2 w-full mb-2" placeholder="age">
+      <input class="border p-2 w-full mb-2" placeholder="monthly_income">
+      <input class="border p-2 w-full mb-2" placeholder="approved_limit">
+      <input class="border p-2 w-full" placeholder="phone_number">
     </div>
   </div>
+</section>
 
-  <!-- Accordion: Create Loan -->
-  <div class="mb-4">
-    <button
-      class="w-full flex justify-between items-center bg-purple-500 text-white px-4 py-2 rounded accordion-toggle">
-      <span>Create Loan</span>
-      <span class="arrow transition-transform duration-200">▶</span>
-    </button>
+<!-- CHECK ELIGIBILITY -->
+<section class="bg-white p-6 rounded shadow">
+  <h2 class="text-xl font-semibold mb-4">/check-eligibility</h2>
 
-    <div class="accordion-content hidden bg-white p-4 mt-2 rounded shadow">
-      <form class="space-y-3">
-        <input type="number" placeholder="Customer ID" class="border p-2 w-full rounded">
-        <input type="number" placeholder="Loan Amount" class="border p-2 w-full rounded">
-        <input type="number" placeholder="Interest Rate" class="border p-2 w-full rounded">
-        <input type="number" placeholder="Tenure (months)" class="border p-2 w-full rounded">
-        <button class="bg-green-500 text-white px-4 py-2 rounded">Create Loan</button>
-      </form>
+  <div class="grid grid-cols-2 gap-6">
+    <div>
+      <h3 class="font-semibold mb-2">Request Body</h3>
+      <input class="border p-2 w-full mb-2" placeholder="customer_id">
+      <input class="border p-2 w-full mb-2" placeholder="loan_amount">
+      <input class="border p-2 w-full mb-2" placeholder="interest_rate">
+      <input class="border p-2 w-full" placeholder="tenure">
+    </div>
+
+    <div>
+      <h3 class="font-semibold mb-2">Response Body</h3>
+      <input class="border p-2 w-full mb-2" placeholder="customer_id">
+      <input class="border p-2 w-full mb-2" placeholder="approval (true/false)">
+      <input class="border p-2 w-full mb-2" placeholder="interest_rate">
+      <input class="border p-2 w-full mb-2" placeholder="corrected_interest_rate">
+      <input class="border p-2 w-full mb-2" placeholder="tenure">
+      <input class="border p-2 w-full" placeholder="monthly_installment">
     </div>
   </div>
+</section>
 
-  <!-- 🔗 Redirect Bar (NOT accordion) -->
-  <div class="mb-4">
-    <a
-      href="/loans/"
-      class="w-full flex justify-between items-center bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-900">
-      <span>Go to Loan Management Page</span>
-      <span>➡</span>
-    </a>
+<!-- CREATE LOAN -->
+<section class="bg-white p-6 rounded shadow">
+  <h2 class="text-xl font-semibold mb-4">/create-loan</h2>
+
+  <div class="grid grid-cols-2 gap-6">
+    <div>
+      <h3 class="font-semibold mb-2">Request Body</h3>
+      <input class="border p-2 w-full mb-2" placeholder="customer_id">
+      <input class="border p-2 w-full mb-2" placeholder="loan_amount">
+      <input class="border p-2 w-full mb-2" placeholder="interest_rate">
+      <input class="border p-2 w-full" placeholder="tenure">
+    </div>
+
+    <div>
+      <h3 class="font-semibold mb-2">Response Body</h3>
+      <input class="border p-2 w-full mb-2" placeholder="loan_id">
+      <input class="border p-2 w-full mb-2" placeholder="customer_id">
+      <input class="border p-2 w-full mb-2" placeholder="loan_approved">
+      <input class="border p-2 w-full mb-2" placeholder="message">
+      <input class="border p-2 w-full" placeholder="monthly_installment">
+    </div>
   </div>
+</section>
+
+<!-- VIEW SINGLE LOAN -->
+<section class="bg-white p-6 rounded shadow">
+  <h2 class="text-xl font-semibold mb-4">/view-loan/{loan_id}</h2>
+
+  <div class="grid grid-cols-2 gap-6">
+    <div>
+      <h3 class="font-semibold mb-2">Path Param</h3>
+      <input class="border p-2 w-full" placeholder="loan_id">
+    </div>
+
+    <div>
+      <h3 class="font-semibold mb-2">Response Body</h3>
+      <textarea class="border p-2 w-full h-40" placeholder='{
+  loan_id,
+  customer: { id, first_name, last_name, phone_number, age },
+  loan_amount,
+  interest_rate,
+  monthly_installment,
+  tenure
+}'></textarea>
+    </div>
+  </div>
+</section>
+
+<!-- VIEW CUSTOMER LOANS -->
+<section class="bg-white p-6 rounded shadow">
+  <h2 class="text-xl font-semibold mb-4">/view-loans/{customer_id}</h2>
+
+  <div class="grid grid-cols-2 gap-6">
+    <div>
+      <h3 class="font-semibold mb-2">Path Param</h3>
+      <input class="border p-2 w-full" placeholder="customer_id">
+    </div>
+
+    <div>
+      <h3 class="font-semibold mb-2">Response Body</h3>
+      <textarea class="border p-2 w-full h-40" placeholder='[
+  {
+    loan_id,
+    loan_amount,
+    interest_rate,
+    monthly_installment,
+    repayments_left
+  }
+]'></textarea>
+    </div>
+  </div>
+</section>
+
 </div>
-
-<!-- JS -->
-<script>
-  document.querySelectorAll(".accordion-toggle").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const content = btn.nextElementSibling;
-      const arrow = btn.querySelector(".arrow");
-
-      content.classList.toggle("hidden");
-      arrow.classList.toggle("rotate-90");
-    });
-  });
-</script>
 
 </body>
 </html>
