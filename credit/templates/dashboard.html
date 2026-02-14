@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Credit Approval System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-6">
+  <h1 class="text-3xl font-bold text-center mb-8">Credit Approval System</h1>
+
+  <!-- Register Customer -->
+  <div class="bg-white shadow-md rounded p-6 mb-8 max-w-xl mx-auto">
+    <h2 class="text-xl font-semibold mb-4">Register Customer</h2>
+    <form action="http://127.0.0.1:8000/register/" method="post" class="space-y-4">
+      <input type="text" name="first_name" placeholder="First Name" class="border p-2 w-full" required>
+      <input type="text" name="last_name" placeholder="Last Name" class="border p-2 w-full" required>
+      <input type="number" name="age" placeholder="Age" class="border p-2 w-full" required>
+      <input type="number" name="monthly_income" placeholder="Monthly Income" class="border p-2 w-full" required>
+      <input type="text" name="phone_number" placeholder="Phone Number" class="border p-2 w-full" required>
+      <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded w-full">Register</button>
+    </form>
+    <div class="mt-4">
+      <h3 class="text-sm font-semibold">Response:</h3>
+      <pre class="bg-gray-100 p-4 rounded text-sm"></pre>
+    </div>
+  </div>
+
+  <!-- Check Eligibility -->
+  <div class="bg-white shadow-md rounded p-6 mb-8 max-w-xl mx-auto">
+    <h2 class="text-xl font-semibold mb-4">Check Eligibility</h2>
+    <form action="http://127.0.0.1:8000/eligibility/" method="post" class="space-y-4">
+      <input type="number" name="customer_id" placeholder="Customer ID" class="border p-2 w-full" required>
+      <input type="number" name="loan_amount" placeholder="Loan Amount" class="border p-2 w-full" required>
+      <input type="number" name="interest_rate" placeholder="Interest Rate (%)" class="border p-2 w-full" required>
+      <input type="number" name="tenure" placeholder="Tenure (months)" class="border p-2 w-full" required>
+      <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded w-full">Check</button>
+    </form>
+    <div class="mt-4">
+      <h3 class="text-sm font-semibold">Response:</h3>
+      <pre class="bg-gray-100 p-4 rounded text-sm"></pre>
+    </div>
+  </div>
+
+  <!-- Create Loan -->
+  <div class="bg-white shadow-md rounded p-6 mb-8 max-w-xl mx-auto">
+    <h2 class="text-xl font-semibold mb-4">Create Loan</h2>
+    <form action="http://127.0.0.1:8000/create-loan/" method="post" class="space-y-4">
+      <input type="number" name="customer_id" placeholder="Customer ID" class="border p-2 w-full" required>
+      <input type="number" name="loan_amount" placeholder="Loan Amount" class="border p-2 w-full" required>
+      <input type="number" name="interest_rate" placeholder="Interest Rate (%)" class="border p-2 w-full" required>
+      <input type="number" name="tenure" placeholder="Tenure (months)" class="border p-2 w-full" required>
+      <button type="submit" class="bg-purple-600 text-white px-4 py-2 rounded w-full">Create</button>
+    </form>
+    <div class="mt-4">
+      <h3 class="text-sm font-semibold">Response:</h3>
+      <pre class="bg-gray-100 p-4 rounded text-sm"></pre>
+    </div>
+  </div>
+
+  <!-- View Loan -->
+  <div class="bg-white shadow-md rounded p-6 mb-8 max-w-xl mx-auto">
+    <h2 class="text-xl font-semibold mb-4">View Loan</h2>
+    <p class="text-sm text-gray-600 mb-2">Replace <code>loan_id</code> in the URL below with the actual loan ID.</p>
+    <form action="http://127.0.0.1:8000/loan/1/" method="get" class="space-y-4">
+      <input type="number" name="loan_id" placeholder="Loan ID (replace in URL)" class="border p-2 w-full">
+      <button type="submit" class="bg-yellow-600 text-white px-4 py-2 rounded w-full">View Loan</button>
+    </form>
+    <div class="mt-4">
+      <h3 class="text-sm font-semibold">Response:</h3>
+      <pre class="bg-gray-100 p-4 rounded text-sm"></pre>
+    </div>
+  </div>
+
+  <!-- View Loans by Customer -->
+  <div class="bg-white shadow-md rounded p-6 mb-8 max-w-xl mx-auto">
+    <h2 class="text-xl font-semibold mb-4">View Loans by Customer</h2>
+    <p class="text-sm text-gray-600 mb-2">Replace <code>customer_id</code> in the URL below with the actual customer ID.</p>
+    <form action="http://127.0.0.1:8000/customer/1/loans/" method="get" class="space-y-4">
+      <input type="number" name="customer_id" placeholder="Customer ID (replace in URL)" class="border p-2 w-full">
+      <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded w-full">View Loans</button>
+    </form>
+    <div class="mt-4">
+      <h3 class="text-sm font-semibold">Response:</h3>
+      <pre class="bg-gray-100 p-4 rounded text-sm"></pre>
+    </div>
+  </div>
+</body>
+</html>

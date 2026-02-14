@@ -1,35 +1,10 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
-from django.db.models import Sum
+from django.db.models import Sum, F
 from .models import Customer, Loan
 from .serializers import CustomerSerializer, LoanSerializer
 from datetime import date, timedelta
-
-# ==============================
-# Customer API (optional ViewSet)
-# ==============================
-class CustomerViewSet(viewsets.ModelViewSet):
-    queryset = Customer.objects.all()
-    serializer_class = CustomerSerializer
-
-    @action(detail=True, methods=["get"])
-    def total_debt(self, request, pk=None):
-        """Get total current debt for a customer"""
-        customer = self.get_object()
-        total = customer.loans.filter(is_active=True).aggregate(
-            total=Sum("loan_amount")
-        )["total"] or 0
-        return Response({"customer_id": customer.customer_id, "total_debt": total})
-
-
-# ==============================
-# Loan API (optional ViewSet)
-# ==============================
-class LoanViewSet(viewsets.ModelViewSet):
-    queryset = Loan.objects.all()
-    serializer_class = LoanSerializer
-
 
 # ==============================
 # Helper Functions
@@ -49,16 +24,22 @@ def calculate_credit_score(customer):
     loans = customer.loans.all()
     score = 50
 
+    # Total current loans
     total_current_loans = loans.filter(is_active=True).aggregate(total=Sum("loan_amount"))["total"] or 0
     if total_current_loans > customer.approved_limit:
         return 0
 
+    # On-time repayment ratio
     on_time_ratio = sum(l.emis_paid_on_time for l in loans) / max(len(loans), 1)
     score += on_time_ratio * 50
 
+    # Penalty for number of loans
     score -= len(loans) * 5
+
+    # Penalty for loans started this year
     score -= sum(1 for l in loans if l.start_date and l.start_date.year == date.today().year) * 5
 
+    # Penalty if EMI burden too high
     total_emi = loans.filter(is_active=True).aggregate(total=Sum("monthly_repayment"))["total"] or 0
     if total_emi > 0.5 * customer.monthly_salary:
         score = min(score, 10)
@@ -88,6 +69,45 @@ def check_eligibility_logic(customer, loan_amount, interest_rate, tenure):
 
 
 # ==============================
+# Customer ViewSet
+# ==============================
+class CustomerViewSet(viewsets.ModelViewSet):
+    queryset = Customer.objects.all()
+    serializer_class = CustomerSerializer
+
+    @action(detail=True, methods=["get"])
+    def total_debt(self, request, pk=None):
+        """Get total current debt for a customer"""
+        customer = self.get_object()
+        total = customer.loans.filter(is_active=True).aggregate(
+            total=Sum("loan_amount")
+        )["total"] or 0
+        return Response({"customer_id": customer.customer_id, "total_debt": total})
+
+
+# ==============================
+# Loan ViewSet
+# ==============================
+class LoanViewSet(viewsets.ModelViewSet):
+    queryset = Loan.objects.all()
+    serializer_class = LoanSerializer
+
+    @action(detail=False, methods=["get"])
+    def late_loans(self, request):
+        """List loans where EMIs paid are less than tenure"""
+        late = Loan.objects.filter(emis_paid_on_time__lt=F("tenure"))
+        serializer = self.get_serializer(late, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=["get"])
+    def active_loans(self, request):
+        """List all active loans"""
+        active = Loan.objects.filter(is_active=True)
+        serializer = self.get_serializer(active, many=True)
+        return Response(serializer.data)
+
+
+# ==============================
 # API Endpoints
 # ==============================
 @api_view(["POST"])
@@ -95,7 +115,7 @@ def register_customer(request):
     """Register a new customer"""
     data = request.data
     try:
-        monthly_income = float(data.get("monthly_income"))
+        monthly_income = float(data.get("monthly_salary") or data.get("monthly_income", 0))
         approved_limit = round(36 * monthly_income / 100000) * 100000
 
         customer = Customer.objects.create(

@@ -84,9 +84,9 @@ ASGI_APPLICATION = "asgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "postgres",
-        "USER": "jaysoni",
-        "PASSWORD": "",  # leave blank if no password
+        "NAME": "credit_db",          # ✅ Use the new database
+        "USER": "credit_user",        # ✅ Use the new user
+        "PASSWORD": "yourpassword",   # ✅ Password you set
         "HOST": "localhost",
         "PORT": "5432",
     }
@@ -131,11 +131,10 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # ========================
-# CELERY SETTINGS
+# CELERY SETTINGS (Redis backend)
 # ========================
-# Use in-memory broker for development/testing
-CELERY_BROKER_URL = "memory://"
-CELERY_RESULT_BACKEND = "django-db"
+CELERY_BROKER_URL = "redis://localhost:6379/0"
+CELERY_RESULT_BACKEND = "redis://localhost:6379/0"
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"

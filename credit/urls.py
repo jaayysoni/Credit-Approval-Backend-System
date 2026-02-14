@@ -1,25 +1,33 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from . import views
+from .views import (
+    CustomerViewSet,
+    LoanViewSet,
+    register_customer,
+    check_eligibility,
+    create_loan,
+    view_loan,
+    view_loans_by_customer,
+)
 
-# -----------------------------
-# DRF Routers for Customer & Loan
-# -----------------------------
+# ==============================
+# Router for ViewSets
+# ==============================
 router = DefaultRouter()
-router.register(r"api/customers", views.CustomerViewSet, basename="customer")
-router.register(r"api/loans", views.LoanViewSet, basename="loan")
+router.register(r'customers', CustomerViewSet, basename='customer')
+router.register(r'loans', LoanViewSet, basename='loan')
 
-# -----------------------------
-# URL Patterns (API-only)
-# -----------------------------
+# ==============================
+# URL Patterns
+# ==============================
 urlpatterns = [
-    # ----- Custom API endpoints -----
-    path("api/register/", views.register_customer, name="api-register"),
-    path("api/check-eligibility/", views.check_eligibility, name="api-check-eligibility"),
-    path("api/create-loan/", views.create_loan, name="api-create-loan"),
-    path("api/view-loan/<int:loan_id>/", views.view_loan, name="api-view-loan"),
-    path("api/view-loans/<int:customer_id>/", views.view_loans_by_customer, name="api-view-loans-by-customer"),
+    # ViewSet routes
+    path('', include(router.urls)),
 
-    # ----- Standard CRUD endpoints via DRF router -----
-    path("", include(router.urls)),
+    # Custom function-based endpoints
+    path('register/', register_customer, name='register_customer'),
+    path('eligibility/', check_eligibility, name='check_eligibility'),
+    path('create-loan/', create_loan, name='create_loan'),
+    path('loan/<int:loan_id>/', view_loan, name='view_loan'),
+    path('customer/<int:customer_id>/loans/', view_loans_by_customer, name='view_loans_by_customer'),
 ]

@@ -1,108 +1,101 @@
 import pandas as pd
-from pathlib import Path
-from django.db import transaction
-
 from credit.models import Customer, Loan
 
-
-# Resolve project root safely
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
-STATIC_DIR = PROJECT_ROOT / "static"
-
-
-def normalize_columns(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Normalize Excel column names:
-    - strip spaces
-    - lowercase
-    - replace spaces with underscores
-    """
-    df.columns = (
-        df.columns
-        .str.strip()
-        .str.lower()
-        .str.replace(" ", "_")
-    )
+# ========================
+# Helper functions
+# ========================
+def normalize_columns(df):
+    """Normalize column names: lowercase + replace spaces with underscores + strip"""
+    df.columns = df.columns.str.strip().str.lower().str.replace(" ", "_")
     return df
 
+def safe_date(val):
+    """Convert pandas Timestamp/NaT to Python date or None"""
+    if pd.isna(val):
+        return None
+    if isinstance(val, pd.Timestamp):
+        return val.date()
+    return val
 
-@transaction.atomic
-def ingest_customers():
-    """
-    Ingest customers from static/customer_data.xlsx
-    Safe & idempotent.
-    """
+# ========================
+# Load customer data
+# ========================
+customer_file = "static/customer_data.xlsx"
+df_customers = pd.read_excel(customer_file)
+df_customers = normalize_columns(df_customers)
 
-    file_path = STATIC_DIR / "customer_data.xlsx"
-    if not file_path.exists():
-        raise FileNotFoundError(f"{file_path} not found")
+# Add current_debt column if missing
+if "current_debt" not in df_customers.columns:
+    df_customers["current_debt"] = 0
 
-    df = pd.read_excel(file_path)
-    df = normalize_columns(df)
+for _, row in df_customers.iterrows():
+    Customer.objects.update_or_create(
+        customer_id=row["customer_id"],
+        defaults={
+            "first_name": row["first_name"],
+            "last_name": row["last_name"],
+            "age": row["age"],
+            "phone_number": str(row["phone_number"]),
+            "monthly_salary": row["monthly_salary"],
+            "approved_limit": row["approved_limit"],
+            "current_debt": row["current_debt"],
+        }
+    )
 
-    print("Customer Excel columns:", list(df.columns))
+print(f"Loaded {df_customers.shape[0]} customers")
 
-    for _, row in df.iterrows():
-        Customer.objects.update_or_create(
-            customer_id=int(row["customer_id"]),
-            defaults={
-                "first_name": str(row["first_name"]).strip(),
-                "last_name": str(row["last_name"]).strip(),
-                "phone_number": str(row["phone_number"]).strip(),
-                "monthly_salary": int(row["monthly_salary"]),
-                "approved_limit": int(row["approved_limit"]),
+# ========================
+# Load loan data
+# ========================
+loan_file = "static/loan_data.xlsx"
+df_loans = pd.read_excel(loan_file)
+df_loans = normalize_columns(df_loans)
 
-                # Not provided → derive later from loans
-                "current_debt": 0,
+# Map known column name differences
+column_mapping = {
+    "monthly_payment": "monthly_repayment",
+    "em_is_paid_on_time": "emis_paid_on_time",
+    "date_of_approval": "start_date",
+}
 
-                # Present in Excel
-                "age": int(row["age"]),
-            },
-        )
+df_loans = df_loans.rename(columns={k: v for k, v in column_mapping.items() if k in df_loans.columns})
 
+# Set defaults for missing columns
+optional_columns_defaults = {
+    "monthly_repayment": 0,
+    "emis_paid_on_time": 0,
+    "start_date": None,
+    "end_date": None,
+    "is_active": True,
+}
 
-@transaction.atomic
-def ingest_loans():
-    """
-    Ingest loans from static/loan_data.xlsx
-    """
+for col, default in optional_columns_defaults.items():
+    if col not in df_loans.columns:
+        df_loans[col] = default
 
-    file_path = STATIC_DIR / "loan_data.xlsx"
-    if not file_path.exists():
-        raise FileNotFoundError(f"{file_path} not found")
+# Convert date columns safely
+for date_col in ["start_date", "end_date"]:
+    if date_col in df_loans.columns:
+        df_loans[date_col] = df_loans[date_col].apply(safe_date)
 
-    df = pd.read_excel(file_path)
-    df = normalize_columns(df)
-
-    print("Loan Excel columns:", list(df.columns))
-
-    for _, row in df.iterrows():
-        try:
-            customer = Customer.objects.get(
-                customer_id=int(row["customer_id"])
-            )
-        except Customer.DoesNotExist:
-            continue
-
+for _, row in df_loans.iterrows():
+    try:
+        customer = Customer.objects.get(customer_id=row["customer_id"])
         Loan.objects.update_or_create(
-            loan_id=int(row["loan_id"]),
+            loan_id=row["loan_id"],
             defaults={
-                "customer": customer,
-                "loan_amount": float(row["loan_amount"]),
-                "tenure": int(row["tenure"]),
-                "interest_rate": float(row["interest_rate"]),
-                "monthly_repayment": float(row["monthly_payment"]),
-                "emis_paid_on_time": int(row["emis_paid_on_time"]),
-                "start_date": row["date_of_approval"],
+                "loan_amount": row["loan_amount"],
+                "tenure": row["tenure"],
+                "interest_rate": row["interest_rate"],
+                "monthly_repayment": row["monthly_repayment"],
+                "emis_paid_on_time": row["emis_paid_on_time"],
+                "start_date": row["start_date"],
                 "end_date": row["end_date"],
-                "is_active": True,
-            },
+                "is_active": row["is_active"],
+                "customer": customer,
+            }
         )
+    except Customer.DoesNotExist:
+        print(f"Customer with ID {row['customer_id']} not found. Skipping loan {row['loan_id']}.")
 
-
-def ingest_all():
-    """
-    Entry point: customers first, then loans.
-    """
-    ingest_customers()
-    ingest_loans()
+print(f"Loaded {df_loans.shape[0]} loans")
