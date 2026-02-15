@@ -312,6 +312,7 @@ def view_loan(request, loan_id):
         "interest_rate": loan.interest_rate,
         "monthly_installment": loan.monthly_repayment,
         "tenure": loan.tenure
+        
     })
 
 
