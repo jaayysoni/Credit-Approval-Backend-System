@@ -2,12 +2,11 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
 from django.db.models import Sum, F
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from datetime import date, timedelta
 
 from .models import Customer, Loan
 from .serializers import CustomerSerializer, LoanSerializer
-
 
 # ==================================
 # Dashboard View
@@ -104,15 +103,12 @@ def check_eligibility_logic(customer, loan_amount, interest_rate, tenure):
 
     if score > 50:
         approved = True
-
     elif 50 >= score > 30:
         corrected_rate = max(interest_rate, 12)
         approved = True
-
     elif 30 >= score > 10:
         corrected_rate = max(interest_rate, 16)
         approved = True
-
     else:
         approved = False
 
@@ -139,11 +135,9 @@ class CustomerViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["get"])
     def total_debt(self, request, pk=None):
         customer = self.get_object()
-
         total = customer.loans.filter(is_active=True).aggregate(
             total=Sum("loan_amount")
         )["total"] or 0
-
         return Response({
             "customer_id": customer.customer_id,
             "total_debt": total
@@ -179,9 +173,7 @@ class LoanViewSet(viewsets.ModelViewSet):
 def register_customer(request):
     try:
         data = request.data
-
         monthly_salary = float(data.get("monthly_income"))
-
         approved_limit = round(36 * monthly_salary / 100000) * 100000
 
         customer = Customer.objects.create(
@@ -198,10 +190,7 @@ def register_customer(request):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     except Exception as e:
-        return Response(
-            {"error": str(e)},
-            status=status.HTTP_400_BAD_REQUEST
-        )
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(["POST"])
@@ -209,21 +198,26 @@ def check_eligibility(request):
     try:
         data = request.data
 
-        customer = Customer.objects.get(
-            customer_id=int(data.get("customer_id"))
-        )
+        customer_id = data.get("customer_id")
+        loan_amount = data.get("loan_amount")
+        interest_rate = data.get("interest_rate")
+        tenure = data.get("tenure")
 
-        loan_amount = float(data.get("loan_amount"))
-        interest_rate = float(data.get("interest_rate"))
-        tenure = int(data.get("tenure"))
+        if not all([customer_id, loan_amount, interest_rate, tenure]):
+            return Response({"error": "All fields are required"}, status=400)
 
-        approved, corrected_rate, monthly_installment = (
-            check_eligibility_logic(
-                customer,
-                loan_amount,
-                interest_rate,
-                tenure
-            )
+        try:
+            customer_id = int(customer_id)
+            loan_amount = float(loan_amount)
+            interest_rate = float(interest_rate)
+            tenure = int(tenure)
+        except ValueError:
+            return Response({"error": "Invalid data type"}, status=400)
+
+        customer = get_object_or_404(Customer, customer_id=customer_id)
+
+        approved, corrected_rate, monthly_installment = check_eligibility_logic(
+            customer, loan_amount, interest_rate, tenure
         )
 
         return Response({
@@ -235,127 +229,105 @@ def check_eligibility(request):
             "monthly_installment": round(monthly_installment, 2)
         })
 
-    except Customer.DoesNotExist:
-        return Response(
-            {"error": "Customer not found"},
-            status=404
-        )
-
     except Exception as e:
-        return Response(
-            {"error": str(e)},
-            status=400
-        )
+        return Response({"error": str(e)}, status=400)
 
 
 @api_view(["POST"])
 def create_loan(request):
+    data = request.data
+
+    # Validate input
+    customer_id = data.get("customer_id")
+    loan_amount = data.get("loan_amount")
+    interest_rate = data.get("interest_rate")
+    tenure = data.get("tenure")
+
+    if not all([customer_id, loan_amount, interest_rate, tenure]):
+        return Response({"error": "All fields are required"}, status=400)
+
     try:
-        data = request.data
+        customer_id = int(customer_id)
+        loan_amount = float(loan_amount)
+        interest_rate = float(interest_rate)
+        tenure = int(tenure)
+    except ValueError:
+        return Response({"error": "Invalid data type"}, status=400)
 
-        customer = Customer.objects.get(
-            customer_id=int(data.get("customer_id"))
-        )
+    # Get customer
+    customer = get_object_or_404(Customer, customer_id=customer_id)
 
-        loan_amount = float(data.get("loan_amount"))
-        interest_rate = float(data.get("interest_rate"))
-        tenure = int(data.get("tenure"))
+    # Check eligibility
+    approved, corrected_rate, monthly_installment = check_eligibility_logic(
+        customer, loan_amount, interest_rate, tenure
+    )
 
-        approved, corrected_rate, monthly_installment = (
-            check_eligibility_logic(
-                customer,
-                loan_amount,
-                interest_rate,
-                tenure
-            )
-        )
-
-        if not approved:
-            return Response({
-                "loan_approved": False,
-                "message": "Loan not approved due to credit score"
-            }, status=400)
-
-        last_loan = Loan.objects.order_by("-loan_id").first()
-        loan_id = (last_loan.loan_id + 1) if last_loan else 1
-
-        loan = Loan.objects.create(
-            loan_id=loan_id,
-            customer=customer,
-            loan_amount=loan_amount,
-            tenure=tenure,
-            interest_rate=corrected_rate,
-            monthly_repayment=round(monthly_installment, 2),
-            emis_paid_on_time=0,
-            is_active=True,
-            start_date=date.today(),
-            end_date=date.today() + timedelta(days=30 * tenure)
-        )
-
+    if not approved:
         return Response({
-            "loan_id": loan.loan_id,
-            "loan_approved": True,
-            "monthly_installment": loan.monthly_repayment
-        })
+            "loan_approved": False,
+            "message": "Loan not approved due to credit score or limits"
+        }, status=400)
 
-    except Customer.DoesNotExist:
-        return Response(
-            {"error": "Customer not found"},
-            status=404
-        )
+    # Generate loan_id
+    last_loan = Loan.objects.order_by("-loan_id").first()
+    loan_id = (last_loan.loan_id + 1) if last_loan else 1
 
-    except Exception as e:
-        return Response(
-            {"error": str(e)},
-            status=400
-        )
+    # Create loan
+    loan = Loan.objects.create(
+        loan_id=loan_id,
+        customer=customer,
+        loan_amount=loan_amount,
+        tenure=tenure,
+        interest_rate=round(corrected_rate, 2),
+        monthly_repayment=round(monthly_installment, 2),
+        emis_paid_on_time=0,
+        is_active=True,
+        start_date=date.today(),
+        end_date=date.today() + timedelta(days=30 * tenure)
+    )
+
+    # Update customer debt
+    customer.current_debt += loan_amount
+    customer.save(update_fields=["current_debt"])
+
+    return Response({
+        "loan_id": loan.loan_id,
+        "loan_approved": True,
+        "loan_amount": loan.loan_amount,
+        "tenure": loan.tenure,
+        "interest_rate": loan.interest_rate,
+        "monthly_installment": loan.monthly_repayment,
+        "start_date": loan.start_date,
+        "end_date": loan.end_date
+    })
 
 
 @api_view(["GET"])
 def view_loan(request, loan_id):
-    try:
-        loan = Loan.objects.get(loan_id=loan_id)
-
-        return Response({
-            "loan_id": loan.loan_id,
-            "customer_id": loan.customer.customer_id,
-            "loan_amount": loan.loan_amount,
-            "interest_rate": loan.interest_rate,
-            "monthly_installment": loan.monthly_repayment,
-            "tenure": loan.tenure
-        })
-
-    except Loan.DoesNotExist:
-        return Response(
-            {"error": "Loan not found"},
-            status=404
-        )
+    loan = get_object_or_404(Loan, loan_id=loan_id)
+    return Response({
+        "loan_id": loan.loan_id,
+        "customer_id": loan.customer.customer_id,
+        "loan_amount": loan.loan_amount,
+        "interest_rate": loan.interest_rate,
+        "monthly_installment": loan.monthly_repayment,
+        "tenure": loan.tenure
+    })
 
 
 @api_view(["GET"])
 def view_loans_by_customer(request, customer_id):
-    try:
-        customer = Customer.objects.get(
-            customer_id=customer_id
-        )
+    customer = get_object_or_404(Customer, customer_id=customer_id)
+    loans = customer.loans.all()
 
-        loans = customer.loans.all()
-
-        result = [
-            {
-                "loan_id": l.loan_id,
-                "loan_amount": l.loan_amount,
-                "interest_rate": l.interest_rate,
-                "monthly_installment": l.monthly_repayment,
-                "repayments_left": max(0, l.tenure - l.emis_paid_on_time)
-            }
-            for l in loans
-        ]
-
-        return Response(result)
-
-    except Customer.DoesNotExist:
-        return Response(
-            {"error": "Customer not found"},
-            status=404
-        )
+    result = [
+        {
+            "loan_id": l.loan_id,
+            "loan_amount": l.loan_amount,
+            "interest_rate": l.interest_rate,
+            "monthly_installment": l.monthly_repayment,
+            "repayments_left": max(0, l.tenure - l.emis_paid_on_time)
+        }
+        for l in loans
+    ]
+    return Response(result)
