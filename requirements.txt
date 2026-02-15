@@ -9,9 +9,17 @@ psycopg2-binary>=2.9
 celery>=5.4
 redis>=5.0
 django-celery-results>=2.5
+django-celery-beat>=2.8
+
+# Excel / Data Processing
+pandas>=3.0
+numpy>=2.4
+openpyxl>=3.1
 
 # Environment & Utilities
 python-dotenv>=1.0
+python-crontab>=3.3
+django-timezone-field>=7.2
 
 # API Utilities
 django-filter>=24.2
