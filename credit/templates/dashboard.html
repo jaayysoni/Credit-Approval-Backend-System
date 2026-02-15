@@ -29,7 +29,7 @@
     <form id="eligibilityForm" class="space-y-4">
       <input type="number" name="customer_id" placeholder="Customer ID" class="border p-2 w-full" required>
       <input type="number" name="loan_amount" placeholder="Loan Amount" class="border p-2 w-full" required>
-      <input type="number" name="interest_rate" placeholder="Interest Rate (%)" class="border p-2 w-full" required>
+      <input type="number" step="0.01" name="interest_rate" placeholder="Interest Rate (%)" class="border p-2 w-full" required>
       <input type="number" name="tenure" placeholder="Tenure (months)" class="border p-2 w-full" required>
       <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded w-full">Check</button>
     </form>
@@ -42,7 +42,7 @@
     <form id="createLoanForm" class="space-y-4">
       <input type="number" name="customer_id" placeholder="Customer ID" class="border p-2 w-full" required>
       <input type="number" name="loan_amount" placeholder="Loan Amount" class="border p-2 w-full" required>
-      <input type="number" name="interest_rate" placeholder="Interest Rate (%)" class="border p-2 w-full" required>
+      <input type="number" step="0.01" name="interest_rate" placeholder="Interest Rate (%)" class="border p-2 w-full" required>
       <input type="number" name="tenure" placeholder="Tenure (months)" class="border p-2 w-full" required>
       <button type="submit" class="bg-purple-600 text-white px-4 py-2 rounded w-full">Create</button>
     </form>
@@ -70,14 +70,15 @@
   </div>
 
 <script>
-
-// Convert form data to JSON properly
+// Convert form data to JSON properly and handle commas in floats
 function formToJSON(form) {
   const data = {};
   const formData = new FormData(form);
 
   formData.forEach((value, key) => {
-    // Convert numeric fields to numbers
+    // Trim and replace comma with dot
+    value = value.toString().trim().replace(",", ".");
+    // Convert to number if possible
     if (!isNaN(value) && value !== "") {
       data[key] = Number(value);
     } else {
@@ -88,24 +89,21 @@ function formToJSON(form) {
   return data;
 }
 
+// POST requests
 async function postRequest(formId, url, responseId) {
   const form = document.getElementById(formId);
   const responseBox = document.getElementById(responseId);
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-
     const jsonData = formToJSON(form);
 
     try {
       const res = await fetch(url, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(jsonData)
       });
-
       const data = await res.json();
       responseBox.textContent = JSON.stringify(data, null, 2);
     } catch (error) {
@@ -114,13 +112,13 @@ async function postRequest(formId, url, responseId) {
   });
 }
 
+// GET requests
 async function getRequest(formId, urlTemplate, responseId) {
   const form = document.getElementById(formId);
   const responseBox = document.getElementById(responseId);
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-
     const idValue = form.querySelector("input").value;
     const url = urlTemplate.replace("ID", idValue);
 
@@ -135,13 +133,12 @@ async function getRequest(formId, urlTemplate, responseId) {
 }
 
 // API Calls
+postRequest("eligibilityForm", "http://127.0.0.1:8000/api/check-eligibility/", "eligibilityResponse");
 postRequest("registerForm", "http://127.0.0.1:8000/api/register/", "registerResponse");
-postRequest("eligibilityForm", "http://127.0.0.1:8000/eligibility/", "eligibilityResponse");
-postRequest("createLoanForm", "http://127.0.0.1:8000/create-loan/", "createLoanResponse");
+postRequest("createLoanForm", "http://127.0.0.1:8000/api/create-loan/", "createLoanResponse");
 
-getRequest("viewLoanForm", "http://127.0.0.1:8000/loan/ID/", "viewLoanResponse");
-getRequest("viewCustomerLoansForm", "http://127.0.0.1:8000/customer/ID/loans/", "viewCustomerLoansResponse");
-
+getRequest("viewLoanForm", "http://127.0.0.1:8000/api/loan/ID/", "viewLoanResponse");
+getRequest("viewCustomerLoansForm", "http://127.0.0.1:8000/api/customer/ID/loans/", "viewCustomerLoansResponse");
 </script>
 
 </body>

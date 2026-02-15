@@ -64,21 +64,60 @@ def calculate_credit_score(customer):
 
 
 def check_eligibility_logic(customer, loan_amount, interest_rate, tenure):
-    score = calculate_credit_score(customer)
+    loans = customer.loans.all()
 
+    # Rule 1: If total current loans > approved_limit → reject
+    total_current_loans = loans.filter(is_active=True).aggregate(
+        total=Sum("loan_amount")
+    )["total"] or 0
+
+    if total_current_loans > customer.approved_limit:
+        return False, interest_rate, 0
+
+    # Rule 2: If total EMI > 50% salary → reject
+    total_emi = loans.filter(is_active=True).aggregate(
+        total=Sum("monthly_repayment")
+    )["total"] or 0
+
+    if total_emi > 0.5 * customer.monthly_salary:
+        return False, interest_rate, 0
+
+    # ---- Credit Score Calculation ----
+    score = 50
+
+    if loans.exists():
+        on_time_ratio = sum(l.emis_paid_on_time for l in loans) / len(loans)
+        score += on_time_ratio * 50
+
+    score -= loans.count() * 5
+
+    score -= sum(
+        1 for l in loans
+        if l.start_date.year == date.today().year
+    ) * 5
+
+    score = max(0, min(100, score))
+
+    # ---- Approval Slabs ----
     corrected_rate = interest_rate
     approved = False
 
     if score > 50:
         approved = True
-    elif 30 < score <= 50:
+
+    elif 50 >= score > 30:
         corrected_rate = max(interest_rate, 12)
         approved = True
-    elif 10 < score <= 30:
+
+    elif 30 >= score > 10:
         corrected_rate = max(interest_rate, 16)
         approved = True
+
     else:
         approved = False
+
+    if not approved:
+        return False, corrected_rate, 0
 
     monthly_installment = calculate_emi(
         loan_amount,
@@ -86,7 +125,7 @@ def check_eligibility_logic(customer, loan_amount, interest_rate, tenure):
         tenure
     )
 
-    return approved, corrected_rate, monthly_installment
+    return True, corrected_rate, monthly_installment
 
 
 # ==================================
