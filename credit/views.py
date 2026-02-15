@@ -312,7 +312,7 @@ def view_loan(request, loan_id):
         "interest_rate": loan.interest_rate,
         "monthly_installment": loan.monthly_repayment,
         "tenure": loan.tenure
-        
+
     })
 
 
@@ -321,14 +321,25 @@ def view_loans_by_customer(request, customer_id):
     customer = get_object_or_404(Customer, customer_id=customer_id)
     loans = customer.loans.all()
 
+    # Optional: filter active loans
+    # active_only = request.query_params.get("active_only", "false").lower() == "true"
+    # if active_only:
+    #     loans = loans.filter(is_active=True)
+
+    total_debt = loans.filter(is_active=True).aggregate(total=Sum("loan_amount"))["total"] or 0
+
     result = [
         {
             "loan_id": l.loan_id,
             "loan_amount": l.loan_amount,
-            "interest_rate": l.interest_rate,
-            "monthly_installment": l.monthly_repayment,
-            "repayments_left": max(0, l.tenure - l.emis_paid_on_time)
+            "interest_rate": round(l.interest_rate, 2),
+            "monthly_installment": round(l.monthly_repayment, 2),
+            "tenure": l.tenure,
+            "repayments_left": max(0, l.tenure - l.emis_paid_on_time),
+            "start_date": l.start_date,
+            "end_date": l.end_date,
+            "is_active": l.is_active
         }
         for l in loans
     ]
-    return Response(result)
+    return Response({"total_debt": total_debt, "loans": result})
