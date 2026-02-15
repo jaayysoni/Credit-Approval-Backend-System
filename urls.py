@@ -1,7 +1,7 @@
-from django.contrib import admin
 from django.urls import path, include
+from credit.views import dashboard
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', include('credit.urls')),  # Only include your actual app
+    path("", dashboard, name="dashboard"),  # Render HTML
+    path("api/", include("credit.urls")),   # All APIs under /api/
 ]

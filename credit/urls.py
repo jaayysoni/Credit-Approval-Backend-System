@@ -1,5 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
+from django.urls import path
+from . import views
 from .views import (
     CustomerViewSet,
     LoanViewSet,
@@ -30,4 +32,5 @@ urlpatterns = [
     path('create-loan/', create_loan, name='create_loan'),
     path('loan/<int:loan_id>/', view_loan, name='view_loan'),
     path('customer/<int:customer_id>/loans/', view_loans_by_customer, name='view_loans_by_customer'),
+    path("", views.dashboard, name="dashboard"),
 ]

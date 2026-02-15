@@ -1,18 +1,18 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.db.models import Max
 
 
 class Customer(models.Model):
     """
-    Customer master table.
     Internal primary key: id (auto by Django)
-    External/business ID: customer_id (from Excel & APIs)
+    Business ID: customer_id (auto-generated sequential)
     """
 
     customer_id = models.PositiveIntegerField(
         unique=True,
         db_index=True,
-        help_text="External customer ID from Excel / APIs"
+        editable=False
     )
 
     first_name = models.CharField(max_length=100)
@@ -49,21 +49,30 @@ class Customer(models.Model):
         ]
         ordering = ["customer_id"]
 
+    def save(self, *args, **kwargs):
+        if not self.customer_id:
+            last_id = Customer.objects.aggregate(
+                max_id=Max("customer_id")
+            )["max_id"]
+
+            self.customer_id = 1 if last_id is None else last_id + 1
+
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f"{self.customer_id} - {self.first_name} {self.last_name}"
 
 
 class Loan(models.Model):
     """
-    Loan table.
     Internal primary key: id (auto by Django)
-    External/business ID: loan_id (from Excel & APIs)
+    Business ID: loan_id (auto-generated sequential)
     """
 
     loan_id = models.PositiveIntegerField(
         unique=True,
         db_index=True,
-        help_text="External loan ID from Excel / APIs"
+        editable=False
     )
 
     customer = models.ForeignKey(
@@ -111,6 +120,16 @@ class Loan(models.Model):
             models.Index(fields=["customer", "is_active"]),
         ]
         ordering = ["-start_date"]
+
+    def save(self, *args, **kwargs):
+        if not self.loan_id:
+            last_id = Loan.objects.aggregate(
+                max_id=Max("loan_id")
+            )["max_id"]
+
+            self.loan_id = 1 if last_id is None else last_id + 1
+
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Loan {self.loan_id} | Customer {self.customer.customer_id}"
