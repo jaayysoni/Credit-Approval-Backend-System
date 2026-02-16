@@ -1,4 +1,5 @@
 from pathlib import Path
+import os
 
 # ========================
 # BASE DIR
@@ -32,7 +33,7 @@ INSTALLED_APPS = [
     "django_celery_beat",
 
     # Local apps
-    "credit",
+    "credit.apps.CreditConfig",
 ]
 
 # ========================
@@ -84,11 +85,11 @@ ASGI_APPLICATION = "asgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "credit_db",          # ✅ Use the new database
-        "USER": "credit_user",        # ✅ Use the new user
-        "PASSWORD": "yourpassword",   # ✅ Password you set
-        "HOST": "localhost",
-        "PORT": "5432",
+        "NAME": os.getenv("POSTGRES_DB", "credit_system"),  # database name
+        "USER": os.getenv("POSTGRES_USER", "credit_user"),  # the new user
+        "PASSWORD": os.getenv("POSTGRES_PASSWORD", "your_password"),  # match what you created
+        "HOST": os.getenv("DB_HOST", "localhost"),
+        "PORT": os.getenv("DB_PORT", "5432"),
     }
 }
 

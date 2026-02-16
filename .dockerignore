@@ -1,0 +1,21 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+env/
+
+# Git files
+.git/
+.gitignore
+
+# Logs and temp
+*.log
+*.tmp
+
+# Docker-specific
+docker-compose.override.yml
+
