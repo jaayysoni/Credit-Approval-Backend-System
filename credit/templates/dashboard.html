@@ -76,9 +76,7 @@ function formToJSON(form) {
   const formData = new FormData(form);
 
   formData.forEach((value, key) => {
-    // Trim and replace comma with dot
     value = value.toString().trim().replace(",", ".");
-    // Convert to number if possible
     if (!isNaN(value) && value !== "") {
       data[key] = Number(value);
     } else {
@@ -132,13 +130,13 @@ async function getRequest(formId, urlTemplate, responseId) {
   });
 }
 
-// API Calls
-postRequest("eligibilityForm", "http://127.0.0.1:8000/api/check-eligibility/", "eligibilityResponse");
-postRequest("registerForm", "http://127.0.0.1:8000/api/register/", "registerResponse");
-postRequest("createLoanForm", "http://127.0.0.1:8000/api/create-loan/", "createLoanResponse");
+// 🔹 Use relative URLs so it works on Render and locally
+postRequest("eligibilityForm", "/api/check-eligibility/", "eligibilityResponse");
+postRequest("registerForm", "/api/register/", "registerResponse");
+postRequest("createLoanForm", "/api/create-loan/", "createLoanResponse");
 
-getRequest("viewLoanForm", "http://127.0.0.1:8000/api/loan/ID/", "viewLoanResponse");
-getRequest("viewCustomerLoansForm", "http://127.0.0.1:8000/api/customer/ID/loans/", "viewCustomerLoansResponse");
+getRequest("viewLoanForm", "/api/loan/ID/", "viewLoanResponse");
+getRequest("viewCustomerLoansForm", "/api/customer/ID/loans/", "viewCustomerLoansResponse");
 </script>
 
 </body>
