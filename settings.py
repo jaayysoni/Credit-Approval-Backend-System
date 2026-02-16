@@ -85,10 +85,10 @@ ASGI_APPLICATION = "asgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("POSTGRES_DB", "credit_system"),  # database name
-        "USER": os.getenv("POSTGRES_USER", "credit_user"),  # the new user
-        "PASSWORD": os.getenv("POSTGRES_PASSWORD", "your_password"),  # match what you created
-        "HOST": os.getenv("DB_HOST", "localhost"),
+        "NAME": os.getenv("POSTGRES_DB"),       # e.g., credit_approval_db
+        "USER": os.getenv("POSTGRES_USER"),     # e.g., credit_approval_user
+        "PASSWORD": os.getenv("POSTGRES_PASSWORD"),
+        "HOST": os.getenv("DB_HOST"),           # e.g., credit-approval-db.internal
         "PORT": os.getenv("DB_PORT", "5432"),
     }
 }
@@ -134,14 +134,5 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # ========================
 # CELERY SETTINGS (Redis backend)
 # ========================
-CELERY_BROKER_URL = "redis://localhost:6379/0"
-CELERY_RESULT_BACKEND = "redis://localhost:6379/0"
-CELERY_ACCEPT_CONTENT = ["json"]
-CELERY_TASK_SERIALIZER = "json"
-CELERY_RESULT_SERIALIZER = "json"
-CELERY_TIMEZONE = "UTC"
-
-# ========================
-# CELERY BEAT SETTINGS
-# ========================
-CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
+CELERY_BROKER_URL = os.getenv("REDIS_URL")       # Redis hostname provided by Render
+CELERY_RESULT_BACKEND = os.getenv("REDIS_URL")
